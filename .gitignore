@@ -65,9 +65,7 @@ __pycache__/
 *.pstats
 
 # Experimental results
-experiments/
-experiments_results/
-experiments_results_icml2021/
+results/
 
 # Plots
 *.png
