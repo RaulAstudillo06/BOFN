@@ -10,8 +10,9 @@ from bofn.utils.dag import DAG
 def experiment_manager(
     problem: str,
     algo: str,
-    first_trial: int, 
+    first_trial: int,
     last_trial: int,
+    batch_size: int,
     n_init_evals: int,
     n_bo_iter: int,
     restart: bool,
@@ -25,7 +26,7 @@ def experiment_manager(
     script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
     results_folder = script_dir + "/results/" + problem + "/" + algo + "/"
 
-    if not os.path.exists(results_folder) :
+    if not os.path.exists(results_folder):
         os.makedirs(results_folder)
     if not os.path.exists(results_folder + "runtimes/"):
         os.makedirs(results_folder + "runtimes/")
@@ -45,9 +46,9 @@ def experiment_manager(
             dag=dag,
             active_input_indices=active_input_indices,
             algo=algo,
+            batch_size=batch_size,
             n_init_evals=n_init_evals,
             n_bo_iter=n_bo_iter,
             trial=trial,
             restart=restart,
         )
-            
