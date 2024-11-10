@@ -248,10 +248,10 @@ class MultivariateNormalNetwork(Posterior):
         nodes_samples = torch.empty(base_samples.shape)
         nodes_samples = nodes_samples.to(self.device).to(self.dtype)
         nodes_samples_available = [False for k in range(self.n_nodes)]
-        # batch_shape = base_samples.shape[len(sample_shape) : -2]
+        batch_shape = base_samples.shape[len(sample_shape) : -2]
 
-        # if len(batch_shape) > 0:
-        # self.X = torch.broadcast_to(self.X, batch_shape + self.X.shape[-2:])
+        if len(batch_shape) > 0:
+            self.X = torch.broadcast_to(self.X, batch_shape + self.X.shape[-2:])
 
         for k in self.root_nodes:
             if self.active_input_indices is not None:
