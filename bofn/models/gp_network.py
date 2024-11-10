@@ -239,10 +239,38 @@ class MultivariateNormalNetwork(Posterior):
     @property
     def event_shape(self) -> torch.Size:
         r"""The event shape (i.e. the shape of a single sample) of the posterior."""
-        shape = list(self.X.shape)
-        shape[-1] = self.n_nodes
+        shape = [self.X.shape[-2], self.n_nodes]
         shape = torch.Size(shape)
-        return shape
+        return self.batch_shape + shape
+
+    @property
+    def batch_shape(self) -> torch.Size:
+        """compute the batch shape of the GaussianProcessNetwork posterior."""
+        gp_batch_shape = torch.broadcast_shapes(
+            *[gp.batch_shape for gp in self.node_GPs]
+        )
+        X_batch_shape = self.X.shape[:-2]
+        return torch.broadcast_shapes(gp_batch_shape, X_batch_shape)
+
+    @property
+    def base_sample_shape(self) -> torch.Size:
+        """Compute the base sample shape of the GaussianProcessNetwork posterior."""
+        return self.event_shape
+
+    @property
+    def _extended_shape(self, sample_shape: torch.Size) -> torch.Size:
+        return sample_shape + self.base_sample_shape
+
+    @property
+    def batch_range(self) -> tuple[int, int]:
+        r"""The t-batch range.
+
+        This is used in samplers to identify the t-batch component of the
+        `base_sample_shape`. The base samples are expanded over the t-batches to
+        provide consistency in the acquisition values, i.e., to ensure that a
+        candidate produces same value regardless of its position on the t-batch.
+        """
+        return (0, -2)
 
     def rsample(self, sample_shape=torch.Size(), base_samples=None):
         nodes_samples = torch.empty(base_samples.shape)
