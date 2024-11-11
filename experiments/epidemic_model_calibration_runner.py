@@ -68,7 +68,7 @@ network_to_objective_transform = lambda Y: -((Y - y_true)**2).sum(dim=-1)
 network_to_objective_transform = GenericMCObjective(network_to_objective_transform)
 
 # Run experiment
-algo = "EIFN"
+algo = "EICF"
 
 n_bo_iter = 50
 
@@ -84,6 +84,7 @@ experiment_manager(
     algo=algo,
     first_trial=first_trial, 
     last_trial=last_trial,
+    batch_size=1,
     n_init_evals=2*(input_dim + 1),
     n_bo_iter=n_bo_iter,
     restart=True,

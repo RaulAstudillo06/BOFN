@@ -14,15 +14,20 @@ script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.append(script_dir[:-12])
 print(script_dir[:-12])
 
-from src.experiment_manager import experiment_manager
-from src.utils.dag import DAG
+from bofn.experiment_manager import experiment_manager
+from bofn.utils.dag import DAG
 
 # Function network
 from alpine2 import Alpine2
 
-n_nodes = 4
+n_nodes = 6
 input_dim = n_nodes
+batch_size=1
 problem = "alpine2_" + str(n_nodes)
+
+if batch_size > 1:
+    problem += "_" + str(batch_size)
+
 alpine2 = Alpine2(n_nodes=n_nodes)
 
 
@@ -52,9 +57,9 @@ def network_to_objective_transform(Y, X=None):
 network_to_objective_transform = GenericMCObjective(network_to_objective_transform)
 
 # Run experiment
-algo = "EIFN"
+algo = "KG"
 
-n_bo_iter = 2
+n_bo_iter = 100
 
 if len(sys.argv) == 3:
     first_trial = int(sys.argv[1])
@@ -68,6 +73,7 @@ experiment_manager(
     algo=algo,
     first_trial=first_trial,
     last_trial=last_trial,
+    batch_size=batch_size,
     n_init_evals=2 * (input_dim + 1),
     n_bo_iter=n_bo_iter,
     restart=True,

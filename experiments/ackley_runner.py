@@ -6,7 +6,7 @@ from botorch.settings import debug
 from torch import Tensor
 
 torch.set_default_dtype(torch.float64)
-debug._set_state(True)
+debug._set_state(False)
 
 
 # Get script directory
@@ -14,8 +14,8 @@ script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.append(script_dir[:-12])
 print(script_dir[:-12])
 
-from src.experiment_manager import experiment_manager
-from src.utils.dag import DAG
+from bofn.experiment_manager import experiment_manager
+from bofn.utils.dag import DAG
 
 # Function network
 from ackley import Ackley
@@ -39,7 +39,7 @@ def function_network(X: Tensor):
 # Underlying DAG
 parent_nodes = []
 for k in range(n_nodes - 1):
-    parent_nodes = [].append([])
+    parent_nodes.append([])
 
 parent_nodes.append([k for k in range(n_nodes - 1)])
 dag = DAG(parent_nodes=parent_nodes)
@@ -60,9 +60,9 @@ def network_to_objective_transform(Y, X=None):
 network_to_objective_transform = GenericMCObjective(network_to_objective_transform)
 
 # Run experiment
-algo = "EIFN"
+algo = "KG"
 
-n_bo_iter = 2
+n_bo_iter = 100
 
 if len(sys.argv) == 3:
     first_trial = int(sys.argv[1])
