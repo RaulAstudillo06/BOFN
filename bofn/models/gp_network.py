@@ -278,14 +278,17 @@ class MultivariateNormalNetwork(Posterior):
         # print(self.X.shape)
         # nodes_samples = torch.empty(base_samples.shape)
         nodes_samples = torch.empty(sample_shape + self.event_shape)
+        # print(nodes_samples.shape)
+        # print(base_samples.shape)
+        # print(e)
         nodes_samples = nodes_samples.to(self.device).to(self.dtype)
         nodes_samples_available = [False for k in range(self.n_nodes)]
-        batch_shape = base_samples.shape[: -2]
+        # batch_shape = base_samples.shape[:-2]
         # print(batch_shape)
         # print(self.X.shape[-2:])
 
-        #if len(batch_shape) > 0:
-            #self.X = torch.broadcast_to(self.X.unsqueeze(0), batch_shape + self.X.shape[-2:])
+        # if len(batch_shape) > 0:
+        # self.X = torch.broadcast_to(self.X.unsqueeze(0), batch_shape + self.X.shape[-2:])
 
         for k in self.root_nodes:
             if self.active_input_indices is not None:
@@ -304,17 +307,27 @@ class MultivariateNormalNetwork(Posterior):
                 if not nodes_samples_available[k] and all(
                     [nodes_samples_available[j] for j in parent_nodes]
                 ):
-                    parent_nodes_samples = nodes_samples[..., parent_nodes]
+                    parent_nodes_samples_normalized = nodes_samples[
+                        ..., parent_nodes
+                    ].clone()
+                    for j in range(len(parent_nodes)):
+                        parent_nodes_samples_normalized[..., j] = (
+                            parent_nodes_samples_normalized[..., j]
+                            - self.normalization_constant_lower[k][j]
+                        ) / (
+                            self.normalization_constant_upper[k][j]
+                            - self.normalization_constant_lower[k][j]
+                        )
                     X_node_k = self.X[..., self.active_input_indices[k]]
                     aux_shape = [sample_shape[0]] + [1] * X_node_k.ndim
                     X_node_k = X_node_k.unsqueeze(0).repeat(*aux_shape)
-                    X_node_k = torch.cat([X_node_k, parent_nodes_samples], -1)
-                    multivariate_normal_at_node_k = self.node_GPs[k].posterior(X_node_k)
-                    nodes_samples[..., k] = (
-                        multivariate_normal_at_node_k.rsample(
-                            sample_shape=torch.Size([1]),
-                            base_samples=base_samples[..., [k]].unsqueeze(dim=0),
-                        )[0, ..., 0]
+                    X_node_k = torch.cat(
+                        [X_node_k, parent_nodes_samples_normalized], -1
                     )
+                    multivariate_normal_at_node_k = self.node_GPs[k].posterior(X_node_k)
+                    nodes_samples[..., k] = multivariate_normal_at_node_k.rsample(
+                        sample_shape=torch.Size([1]),
+                        base_samples=base_samples[..., [k]].unsqueeze(dim=0),
+                    )[0, ..., 0]
                     nodes_samples_available[k] = True
         return nodes_samples
