@@ -273,13 +273,19 @@ class MultivariateNormalNetwork(Posterior):
         return (0, -2)
 
     def rsample(self, sample_shape=torch.Size(), base_samples=None):
-        nodes_samples = torch.empty(base_samples.shape)
+        # print(sample_shape)
+        # print(base_samples.shape)
+        # print(self.X.shape)
+        # nodes_samples = torch.empty(base_samples.shape)
+        nodes_samples = torch.empty(sample_shape + self.event_shape)
         nodes_samples = nodes_samples.to(self.device).to(self.dtype)
         nodes_samples_available = [False for k in range(self.n_nodes)]
-        batch_shape = base_samples.shape[len(sample_shape) : -2]
+        batch_shape = base_samples.shape[: -2]
+        # print(batch_shape)
+        # print(self.X.shape[-2:])
 
-        if len(batch_shape) > 0:
-            self.X = torch.broadcast_to(self.X, batch_shape + self.X.shape[-2:])
+        #if len(batch_shape) > 0:
+            #self.X = torch.broadcast_to(self.X.unsqueeze(0), batch_shape + self.X.shape[-2:])
 
         for k in self.root_nodes:
             if self.active_input_indices is not None:
@@ -305,7 +311,7 @@ class MultivariateNormalNetwork(Posterior):
                     X_node_k = torch.cat([X_node_k, parent_nodes_samples], -1)
                     multivariate_normal_at_node_k = self.node_GPs[k].posterior(X_node_k)
                     nodes_samples[..., k] = (
-                        multivariate_normal_at_node_k.rsample_from_base_samples(
+                        multivariate_normal_at_node_k.rsample(
                             sample_shape=torch.Size([1]),
                             base_samples=base_samples[..., [k]].unsqueeze(dim=0),
                         )[0, ..., 0]
