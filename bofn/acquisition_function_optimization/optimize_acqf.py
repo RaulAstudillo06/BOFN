@@ -37,20 +37,20 @@ def optimize_acqf_and_get_suggested_point(
         baseline_candidate, _ = optimize_acqf(
             acq_function=posterior_mean,
             bounds=bounds,
-            q=1,
+            q=batch_size,
             num_restarts=num_restarts,
             raw_samples=raw_samples,
             options={"batch_limit": 5},
         )
 
         if isinstance(acq_func, qKnowledgeGradient):
-            augmented_q_batch_size = acq_func.get_augmented_q_batch_size(1)
+            augmented_q_batch_size = acq_func.get_augmented_q_batch_size(batch_size)
             baseline_candidate = baseline_candidate.detach().repeat(
                 1, augmented_q_batch_size, 1
             )
         else:
             baseline_candidate = baseline_candidate.detach().view(
-                torch.Size([1, 1, input_dim])
+                torch.Size([1, batch_size, input_dim])
             )
 
         batch_initial_conditions = torch.cat(

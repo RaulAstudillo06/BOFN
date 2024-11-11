@@ -225,14 +225,33 @@ def get_new_suggested_point(
         )
     elif algo == "EI":
         model = fit_gp_model(X=X, Y=objective_at_X)
-        acquisition_function = ExpectedImprovement(
-            model=model, best_f=objective_at_X.max().item()
-        )
-        posterior_mean_function = GPPosteriorMean(model=model)
+        if batch_size == 1:
+            acquisition_function = ExpectedImprovement(
+                model=model, best_f=objective_at_X.max().item()
+            )
+            posterior_mean_function = GPPosteriorMean(model=model)
+        else:
+            qmc_sampler = SobolQMCNormalSampler(num_samples=128)
+            acquisition_function = qExpectedImprovement(
+                model=model,
+                best_f=objective_at_X.max().item(),
+                sampler=qmc_sampler,
+            )
+            posterior_mean_function = PosteriorMean(
+                model=model,
+                sampler=qmc_sampler,
+            )
+
     elif algo == "KG":
         model = fit_gp_model(X=X, Y=objective_at_X)
         acquisition_function = qKnowledgeGradient(model=model, num_fantasies=8)
-        posterior_mean_function = GPPosteriorMean(model=model)
+        if batch_size == 1:
+            posterior_mean_function = GPPosteriorMean(model=model)
+        else:
+            posterior_mean_function = PosteriorMean(
+                model=model,
+                sampler=qmc_sampler,
+            )
 
     new_x = optimize_acqf_and_get_suggested_point(
         acq_func=acquisition_function,
