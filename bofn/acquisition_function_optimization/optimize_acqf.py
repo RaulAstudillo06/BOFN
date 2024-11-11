@@ -44,13 +44,13 @@ def optimize_acqf_and_get_suggested_point(
         )
 
         if isinstance(acq_func, qKnowledgeGradient):
-            augmented_q_batch_size = acq_func.get_augmented_q_batch_size(batch_size)
+            augmented_q_batch_size = acq_func.get_augmented_q_batch_size(1)
             baseline_candidate = baseline_candidate.detach().repeat(
                 1, augmented_q_batch_size, 1
             )
         else:
             baseline_candidate = baseline_candidate.detach().view(
-                torch.Size([1, batch_size, input_dim])
+                torch.Size([1, 1, input_dim])
             )
 
         batch_initial_conditions = torch.cat(
