@@ -39,7 +39,7 @@ def function_network(X: Tensor):
 # Underlying DAG
 parent_nodes = []
 for k in range(n_nodes - 1):
-    parent_nodes = [].append([])
+    parent_nodes.append([])
 
 parent_nodes.append([k for k in range(n_nodes - 1)])
 dag = DAG(parent_nodes=parent_nodes)
