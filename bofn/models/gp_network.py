@@ -65,7 +65,7 @@ class GaussianProcessNetwork(Model):
                 self.node_GPs[k] = FixedNoiseGP(
                     train_X=train_X_node_k,
                     train_Y=train_Y_node_k,
-                    train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-6,
+                    train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-4,
                     outcome_transform=Standardize(m=1),
                 )
                 self.node_mlls[k] = ExactMarginalLogLikelihood(
@@ -92,16 +92,16 @@ class GaussianProcessNetwork(Model):
                     aux_model = FixedNoiseGP(
                         train_X=train_X_node_k,
                         train_Y=train_Y_node_k,
-                        train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-6,
+                        train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-4,
                         outcome_transform=Standardize(m=1),
                     )
                     batch_shape = aux_model._aug_batch_shape
                     # self.node_GPs[k] = SingleTaskGP(train_X=train_X_node_k, train_Y=train_Y_node_k, outcome_transform=Standardize(m=1, batch_shape=torch.Size([1])))
-                    # self.node_GPs[k] = FixedNoiseGP(train_X=train_X_node_k, train_Y=train_Y_node_k, train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-6, outcome_transform=Standardize(m=1, batch_shape=torch.Size([1])))
+                    # self.node_GPs[k] = FixedNoiseGP(train_X=train_X_node_k, train_Y=train_Y_node_k, train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-4, outcome_transform=Standardize(m=1, batch_shape=torch.Size([1])))
                     self.node_GPs[k] = FixedNoiseGP(
                         train_X=train_X_node_k,
                         train_Y=train_Y_node_k,
-                        train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-6,
+                        train_Yvar=torch.ones(train_Y_node_k.shape) * 1e-4,
                         outcome_transform=Standardize(m=1, batch_shape=torch.Size([])),
                     )
                     self.node_mlls[k] = ExactMarginalLogLikelihood(
@@ -171,7 +171,7 @@ class GaussianProcessNetwork(Model):
                 X_node_k = X
             Y_node_k = Y[..., [k]]
             fantasy_models[k] = self.node_GPs[k].condition_on_observations(
-                X_node_k, Y_node_k, noise=torch.ones(Y_node_k.shape[1:]) * 1e-6
+                X_node_k, Y_node_k, noise=torch.ones(Y_node_k.shape[1:]) * 1e-4
             )
 
         for k in range(self.n_nodes):
@@ -193,7 +193,7 @@ class GaussianProcessNetwork(Model):
                 X_node_k = torch.cat([X_aux, aux], -1)
                 Y_node_k = Y[..., [k]]
                 fantasy_models[k] = self.node_GPs[k].condition_on_observations(
-                    X_node_k, Y_node_k, noise=torch.ones(Y_node_k.shape[1:]) * 1e-6
+                    X_node_k, Y_node_k, noise=torch.ones(Y_node_k.shape[1:]) * 1e-4
                 )
 
         return GaussianProcessNetwork(
